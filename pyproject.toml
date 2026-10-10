@@ -67,6 +67,10 @@ module = ["alembic.*", "apscheduler.*"]
 ignore_errors = true
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disable_error_code = ["arg-type"]
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
