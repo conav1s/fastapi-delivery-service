@@ -3,23 +3,24 @@ from contextlib import asynccontextmanager
 from datetime import timedelta
 
 from fastapi import FastAPI
-from redis.asyncio import Redis
 from httpx import AsyncClient
 from loguru import logger
+from redis.asyncio import Redis
+
+from delivery_service.api.exceptions import register_exception_handler
+from delivery_service.api.router import router, router_debug
+from delivery_service.clients.cbr import CbrClient
+from delivery_service.services.delivery_cost import DeliveryCostService
+from delivery_service.services.rate import RateService
 
 from .config import settings
+from .db.session import session_factory
 from .logging_setup import setup_logging
 from .scheduler import create_scheduler
-from .db.session import session_factory
-from delivery_service.api.router import router, router_debug
-from delivery_service.api.exceptions import register_exception_handler
-from delivery_service.clients.cbr import CbrClient
-from delivery_service.services.rate import RateService
-from delivery_service.services.delivery_cost import DeliveryCostService
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     setup_logging()
     logger.info("Starting delivery service")
 

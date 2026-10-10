@@ -1,8 +1,9 @@
 from datetime import timedelta
 from decimal import Decimal
-from loguru import logger
 
+from loguru import logger
 from redis.asyncio import Redis, RedisError
+
 from delivery_service.clients.cbr import CbrClient
 
 

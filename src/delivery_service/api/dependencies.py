@@ -1,16 +1,16 @@
-from typing import Annotated
 from collections.abc import AsyncGenerator
+from typing import Annotated
 import uuid
 
+from fastapi import Cookie, Depends, Response
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import Response, Cookie, Depends
 
 from delivery_service.config import settings
 from delivery_service.db.session import session_factory
 from delivery_service.services.packages import PackageService
 
 
-async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
+async def get_db_session() -> AsyncGenerator[AsyncSession]:
     async with session_factory() as session:
         yield session
 

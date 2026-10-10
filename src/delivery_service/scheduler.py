@@ -1,11 +1,11 @@
-from datetime import timedelta, datetime, UTC
-from loguru import logger
+from datetime import UTC, datetime, timedelta
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
+from loguru import logger
 
-from delivery_service.services.delivery_cost import DeliveryCostService
 from delivery_service.clients.exceptions import RateUnavailableError
+from delivery_service.services.delivery_cost import DeliveryCostService
 
 
 async def fill_missing_cost_job(service: DeliveryCostService) -> None:

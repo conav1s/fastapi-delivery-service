@@ -1,9 +1,8 @@
+from datetime import timedelta
 from typing import Literal
 
-from datetime import timedelta
-
+from pydantic import HttpUrl, PositiveInt, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import SecretStr, PositiveInt, HttpUrl, field_validator
 from sqlalchemy import URL
 
 LogLevel = Literal["TRACE", "DEBUG", "INFO", "SUCCESS", "WARNING", "ERROR", "CRITICAL"]

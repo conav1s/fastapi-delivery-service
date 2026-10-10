@@ -1,10 +1,11 @@
 from decimal import Decimal
 
 from loguru import logger
-from sqlalchemy import update, SQLColumnExpression
+from sqlalchemy import SQLColumnExpression, update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from delivery_service.db.models import Package
+
 from .rate import RateService
 
 K_WEIGHT = Decimal("0.5")

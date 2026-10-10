@@ -4,18 +4,19 @@ import uuid
 from fastapi import Depends, Request
 from fastapi.routing import APIRouter
 
-from delivery_service.services.packages import PackageService, PackageData, PackageQuery
 from delivery_service.services.delivery_cost import DeliveryCostService
+from delivery_service.services.packages import PackageData, PackageQuery, PackageService
+
 from .dependencies import get_package_service, get_user_session_id
 from .schemas import (
+    FillCostsResponse,
     PackageCreate,
     PackageCreateResponse,
-    PackageTypeRead,
-    PackageRead,
-    PackageListResponse,
-    Pagination,
     PackageFilters,
-    FillCostsResponse
+    PackageListResponse,
+    PackageRead,
+    PackageTypeRead,
+    Pagination,
 )
 
 router = APIRouter(tags=["packages"])
@@ -90,6 +91,7 @@ async def list_packages(
 
 
 router_debug = APIRouter(tags=["debug"])
+
 
 @router_debug.post("/packages/fill-missing-costs")
 async def update_packages_delivery_cost(request: Request) -> FillCostsResponse:

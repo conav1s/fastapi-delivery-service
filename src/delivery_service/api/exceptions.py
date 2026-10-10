@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from delivery_service.services.exceptions import PackageNotFoundError
 from delivery_service.clients.exceptions import RateUnavailableError
+from delivery_service.services.exceptions import PackageNotFoundError
 
 
 async def package_not_found_handler(request: Request, exc: PackageNotFoundError) -> JSONResponse:
@@ -21,5 +21,5 @@ def register_exception_handler(app: FastAPI) -> None:
 
     app.add_exception_handler(
         RateUnavailableError,
-        rate_unavailable_handler, # type: ignore[arg-type]
+        rate_unavailable_handler,  # type: ignore[arg-type]
     )

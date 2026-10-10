@@ -1,7 +1,7 @@
-from typing import Annotated
 from decimal import Decimal
+from typing import Annotated
 
-from pydantic import BaseModel, Field, PositiveInt, ConfigDict, field_serializer
+from pydantic import BaseModel, ConfigDict, Field, PositiveInt, field_serializer
 
 PackageNameType = Annotated[str, Field(max_length=80)]
 PackageTypeNameType = Annotated[str, Field(max_length=50)]

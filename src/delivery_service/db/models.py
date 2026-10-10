@@ -1,9 +1,9 @@
-from typing import Annotated
-from decimal import Decimal
 from datetime import datetime
+from decimal import Decimal
+from typing import Annotated
 import uuid
 
-from sqlalchemy import ForeignKey, String, Numeric, DateTime, func, CheckConstraint, MetaData
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, MetaData, Numeric, String, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 intpk = Annotated[int, mapped_column(primary_key=True)]
@@ -30,7 +30,7 @@ class PackageType(Base):
     id: Mapped[intpk]
     name: Mapped[PackageTypeName]
 
-    packages: Mapped[list["Package"]] = relationship(back_populates="type")
+    packages: Mapped[list[Package]] = relationship(back_populates="type")
 
 
 class Package(Base):
@@ -48,7 +48,7 @@ class Package(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    type: Mapped["PackageType"] = relationship(back_populates="packages", lazy="selectin")
+    type: Mapped[PackageType] = relationship(back_populates="packages", lazy="selectin")
 
     __table_args__ = (
         CheckConstraint("weight > 0", name="weight_positive"),

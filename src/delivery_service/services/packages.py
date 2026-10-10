@@ -2,10 +2,11 @@ from dataclasses import dataclass
 from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from delivery_service.db.models import Package, PackageType
+
 from .exceptions import PackageNotFoundError
 
 

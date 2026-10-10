@@ -1,10 +1,10 @@
-import sys
 import inspect
 import logging
-
-from .config import settings
+import sys
 
 from loguru import logger
+
+from .config import settings
 
 
 class InterceptHandler(logging.Handler):

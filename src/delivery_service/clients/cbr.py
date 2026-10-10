@@ -1,5 +1,5 @@
-from loguru import logger
 from httpx import AsyncClient, HTTPError
+from loguru import logger
 
 from .exceptions import RateUnavailableError
 
