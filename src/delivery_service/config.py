@@ -12,7 +12,7 @@ LogLevel = Literal["TRACE", "DEBUG", "INFO", "SUCCESS", "WARNING", "ERROR", "CRI
 class AppSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_prefix="APP_", extra="ignore")
 
-    debug: bool = True
+    debug: bool = False
     log_level: LogLevel = "INFO"
     log_json: bool = False
     delivery_cost_update_interval_min: int = 5
@@ -73,7 +73,7 @@ class RedisSettings(BaseSettings):
 class CurrencyExchangerSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_prefix="EXCHANGER_", extra="ignore")
 
-    source_url: HttpUrl
+    source_url: HttpUrl = HttpUrl("https://www.cbr-xml-daily.ru/daily_json.js")
     refresh_hours: int = 1
 
 
