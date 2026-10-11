@@ -25,10 +25,10 @@ class FakeRedis:
 
 class FakeCbrClient:
     def __init__(self, usd_rate_str: str) -> None:
-        self._usd_rate = usd_rate_str
+        self._usd_rate = Decimal(usd_rate_str)
         self.calls = 0
 
-    async def fetch_usd_rate(self) -> str:
+    async def fetch_usd_rate(self) -> Decimal:
         self.calls += 1
         return self._usd_rate
 
