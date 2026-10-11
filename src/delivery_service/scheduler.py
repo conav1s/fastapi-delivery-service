@@ -5,13 +5,13 @@ from apscheduler.triggers.interval import IntervalTrigger
 from loguru import logger
 
 from delivery_service.services.delivery_cost import DeliveryCostService
-from delivery_service.services.exceptions import RateUnevaluateError
+from delivery_service.services.exceptions import ExchangeRateUnavailableError
 
 
 async def fill_missing_cost_job(service: DeliveryCostService) -> None:
     try:
         await service.fill_missing_costs()
-    except RateUnevaluateError:
+    except ExchangeRateUnavailableError:
         logger.error("Delivery cost calculation skipped: USD rate service is helpless")
 
 

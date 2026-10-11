@@ -22,12 +22,12 @@ class CbrClient:
             data = response.json()
 
             json_value = data["Valute"]["USD"]["Value"]
-            usd_rate = Decimal(json_value)
+            usd_rate = Decimal(str(json_value))
         except HTTPError as err:
             logger.warning("Failed to fetch USD rate from {}: {!r}", self._url, err)
             raise ExchangerServiceUnavailableError(self._url) from err
         except KeyError as err:
-            logger.warning("Failed to extract rate from JSON by key: {}", "USD")
+            logger.warning("Failed to extract rate from JSON by key: {}", err.args[0])
             raise ExchangerServiceJSONKeyNotFoundError("USD") from err
         except InvalidOperation as err:
             logger.warning("Rate value {} is not a number", json_value)

@@ -7,7 +7,7 @@ from redis.asyncio import Redis, RedisError
 from delivery_service.clients.cbr import CbrClient
 from delivery_service.clients.exceptions import ClientError
 
-from .exceptions import RateUnevaluateError
+from .exceptions import ExchangeRateUnavailableError
 
 
 class RateService:
@@ -30,9 +30,8 @@ class RateService:
         try:
             usd_rate = await self._cbr.fetch_usd_rate()
             logger.debug("Rate is received from CBR")
-        except ClientError:
-            logger.error("CBR exchanger service and redis cache is unavailable")
-            raise RateUnevaluateError() from None
+        except ClientError as err:
+            raise ExchangeRateUnavailableError() from err
 
         try:
             await self._redis.setex(self._KEY, self._ttl, str(usd_rate))

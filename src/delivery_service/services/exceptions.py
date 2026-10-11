@@ -19,8 +19,8 @@ class PackageTypeNotFoundError(DomainError):
         super().__init__(f"Package Type with id = {type_id} not found")
 
 
-class RateUnevaluateError(DomainError):
-    code = "rate_unevaluate"
+class ExchangeRateUnavailableError(DomainError):
+    code = "rate_unavailable"
 
     def __init__(self) -> None:
         super().__init__("Cannot obtained rate in any ways")

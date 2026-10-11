@@ -5,7 +5,6 @@ class ClientError(DomainError):
     code = "external_service_error"
 
     def __init__(self, message: str = "Something wrong with external service") -> None:
-        self.message = message
         super().__init__(message)
 
 

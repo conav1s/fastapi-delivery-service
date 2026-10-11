@@ -12,7 +12,7 @@ from delivery_service.clients.exceptions import (
 
 
 def handler_success(request: httpx.Request) -> httpx.Response:
-    return httpx.Response(200, json={"Valute": {"USD": {"Value": "84.9048"}}})
+    return httpx.Response(200, json={"Valute": {"USD": {"Value": 84.9048}}})
 
 
 def handler_fail(request: httpx.Request) -> httpx.Response:

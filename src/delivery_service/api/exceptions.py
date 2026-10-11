@@ -9,7 +9,7 @@ from delivery_service.clients.exceptions import (
     ExchangerServiceUnavailableError,
 )
 from delivery_service.exceptions import DomainError
-from delivery_service.services.exceptions import PackageNotFoundError, PackageTypeNotFoundError
+from delivery_service.services.exceptions import PackageNotFoundError, PackageTypeNotFoundError, ExchangeRateUnavailableError
 
 STATUS_BY_ERROR: dict[type[DomainError], int] = {
     ExchangerServiceUnavailableError: 503,
@@ -17,12 +17,13 @@ STATUS_BY_ERROR: dict[type[DomainError], int] = {
     ExchangerServiceRateValueError: 502,
     PackageNotFoundError: 404,
     PackageTypeNotFoundError: 422,
+    ExchangeRateUnavailableError: 503
 }
 
 
 async def domain_errors_handler(request: Request, exc: DomainError) -> JSONResponse:
     return JSONResponse(
-        status_code=STATUS_BY_ERROR[type(exc)],
+        status_code=STATUS_BY_ERROR.get(type(exc), 500),
         content={
             "code": exc.code,
             "message": exc.message,
@@ -67,21 +68,6 @@ async def uncaught_exceptions_handler(request: Request, exc: Exception) -> JSONR
 
 
 def register_exception_handler(app: FastAPI) -> None:
-    # app.add_exception_handler(
-    #     PackageNotFoundError,
-    #     package_not_found_handler,  # type: ignore[arg-type]
-    # )
-
-    # app.add_exception_handler(
-    #     RateUnavailableError,
-    #     rate_unavailable_handler,  # type: ignore[arg-type]
-    # )
-
-    # app.add_exception_handler(
-    #     PackageTypeNotFoundError,
-    #     package_type_not_found_handler, # type: ignore[arg-type]
-    # )
-
     clients_exc_types = [
         ExchangerServiceUnavailableError,
         ExchangerServiceJSONKeyNotFoundError,
@@ -103,9 +89,13 @@ def register_exception_handler(app: FastAPI) -> None:
 
     app.add_exception_handler(
         RequestValidationError,
-        register_exception_handler,  # type: ignore[arg-type]
+        request_validation_errors_handler,  # type: ignore[arg-type]
     )
     app.add_exception_handler(
         HTTPException,
         starlette_http_errors_handler,  # type: ignore[arg-type]
+    )
+    app.add_exception_handler(
+        Exception,
+        uncaught_exceptions_handler,
     )
