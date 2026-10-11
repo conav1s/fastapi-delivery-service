@@ -40,4 +40,3 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.execute("DELETE FROM package_types;")
     op.execute("SELECT setval(pg_get_serial_sequence('package_types', 'id'), 1, false);")
-    

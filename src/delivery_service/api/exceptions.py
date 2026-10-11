@@ -9,7 +9,11 @@ from delivery_service.clients.exceptions import (
     ExchangerServiceUnavailableError,
 )
 from delivery_service.exceptions import DomainError
-from delivery_service.services.exceptions import PackageNotFoundError, PackageTypeNotFoundError, ExchangeRateUnavailableError
+from delivery_service.services.exceptions import (
+    ExchangeRateUnavailableError,
+    PackageNotFoundError,
+    PackageTypeNotFoundError,
+)
 
 STATUS_BY_ERROR: dict[type[DomainError], int] = {
     ExchangerServiceUnavailableError: 503,
@@ -17,7 +21,7 @@ STATUS_BY_ERROR: dict[type[DomainError], int] = {
     ExchangerServiceRateValueError: 502,
     PackageNotFoundError: 404,
     PackageTypeNotFoundError: 422,
-    ExchangeRateUnavailableError: 503
+    ExchangeRateUnavailableError: 503,
 }
 
 

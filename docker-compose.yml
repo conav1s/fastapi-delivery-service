@@ -30,6 +30,6 @@ services:
       timeout: 3s
       retries: 3
       start_period: 1s
-    
+
 volumes:
   pg_data:
