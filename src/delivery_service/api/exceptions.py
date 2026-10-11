@@ -1,13 +1,9 @@
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from loguru import logger
 from starlette.exceptions import HTTPException
 
-from delivery_service.clients.exceptions import (
-    ExchangerServiceJSONKeyNotFoundError,
-    ExchangerServiceRateValueError,
-    ExchangerServiceUnavailableError,
-)
 from delivery_service.exceptions import DomainError
 from delivery_service.services.exceptions import (
     ExchangeRateUnavailableError,
@@ -16,9 +12,6 @@ from delivery_service.services.exceptions import (
 )
 
 STATUS_BY_ERROR: dict[type[DomainError], int] = {
-    ExchangerServiceUnavailableError: 503,
-    ExchangerServiceJSONKeyNotFoundError: 502,
-    ExchangerServiceRateValueError: 502,
     PackageNotFoundError: 404,
     PackageTypeNotFoundError: 422,
     ExchangeRateUnavailableError: 503,
@@ -61,6 +54,7 @@ async def starlette_http_errors_handler(request: Request, exc: HTTPException) ->
 
 
 async def uncaught_exceptions_handler(request: Request, exc: Exception) -> JSONResponse:
+    logger.exception("Unhandled error on {} {}", request.method, request.url.path)
     return JSONResponse(
         status_code=500,
         content={
@@ -72,24 +66,10 @@ async def uncaught_exceptions_handler(request: Request, exc: Exception) -> JSONR
 
 
 def register_exception_handler(app: FastAPI) -> None:
-    clients_exc_types = [
-        ExchangerServiceUnavailableError,
-        ExchangerServiceJSONKeyNotFoundError,
-        ExchangerServiceRateValueError,
-    ]
-
-    services_exc_types = [
-        PackageNotFoundError,
-        PackageTypeNotFoundError,
-    ]
-
-    domain_exc_types = clients_exc_types + services_exc_types
-
-    for exc_type in domain_exc_types:
-        app.add_exception_handler(
-            exc_type,
-            domain_errors_handler,  # type: ignore[arg-type]
-        )
+    app.add_exception_handler(
+        DomainError,
+        domain_errors_handler,  # type: ignore[arg-type]
+    )
 
     app.add_exception_handler(
         RequestValidationError,

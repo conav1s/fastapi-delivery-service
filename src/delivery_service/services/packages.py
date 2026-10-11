@@ -54,7 +54,6 @@ class PackageService:
             constraint = getattr(getattr(err.orig, "diag", None), "constraint_name", None)
             if constraint == "fk_packages_type_id_package_types":
                 raise PackageTypeNotFoundError(data.type_id) from err
-        except:
             raise
 
         return package

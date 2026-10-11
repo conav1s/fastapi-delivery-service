@@ -23,4 +23,4 @@ class ExchangeRateUnavailableError(DomainError):
     code = "rate_unavailable"
 
     def __init__(self) -> None:
-        super().__init__("Cannot obtained rate in any ways")
+        super().__init__("Cannot obtain exchange rate: cache and CBR are both unavailable")
