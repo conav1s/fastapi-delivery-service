@@ -3,11 +3,12 @@ from decimal import Decimal
 from uuid import UUID
 
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from delivery_service.db.models import Package, PackageType
 
-from .exceptions import PackageNotFoundError
+from .exceptions import PackageNotFoundError, PackageTypeNotFoundError
 
 
 @dataclass(frozen=True)
@@ -38,16 +39,21 @@ class PackageService:
 
     async def create_package(self, data: PackageData, session_id: UUID) -> Package:
 
-        async with self._db.begin():
-            package = Package(
-                name=data.name,
-                type_id=data.type_id,
-                weight=data.weight,
-                content_cost_usd=data.content_cost_usd,
-                session_id=session_id,
-            )
+        try:
+            async with self._db.begin():
+                package = Package(
+                    name=data.name,
+                    type_id=data.type_id,
+                    weight=data.weight,
+                    content_cost_usd=data.content_cost_usd,
+                    session_id=session_id,
+                )
 
-            self._db.add(package)
+                self._db.add(package)
+        except IntegrityError as err:
+            constraint = getattr(getattr(err.orig, "diag", None), "constraint_name", None)
+            if constraint == "fk_packages_type_id_package_types":
+                raise PackageTypeNotFoundError(data.type_id) from err
 
         return package
 

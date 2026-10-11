@@ -1,25 +1,111 @@
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException
 
-from delivery_service.clients.exceptions import RateUnavailableError
-from delivery_service.services.exceptions import PackageNotFoundError
+from delivery_service.clients.exceptions import (
+    ExchangerServiceJSONKeyNotFoundError,
+    ExchangerServiceRateValueError,
+    ExchangerServiceUnavailableError,
+)
+from delivery_service.exceptions import DomainError
+from delivery_service.services.exceptions import PackageNotFoundError, PackageTypeNotFoundError
+
+STATUS_BY_ERROR: dict[type[DomainError], int] = {
+    ExchangerServiceUnavailableError: 503,
+    ExchangerServiceJSONKeyNotFoundError: 502,
+    ExchangerServiceRateValueError: 502,
+    PackageNotFoundError: 404,
+    PackageTypeNotFoundError: 422,
+}
 
 
-async def package_not_found_handler(request: Request, exc: PackageNotFoundError) -> JSONResponse:
-    return JSONResponse(status_code=404, content={"detail": exc.message})
+async def domain_errors_handler(request: Request, exc: DomainError) -> JSONResponse:
+    return JSONResponse(
+        status_code=STATUS_BY_ERROR[type(exc)],
+        content={
+            "code": exc.code,
+            "message": exc.message,
+            "details": None,
+        },
+    )
 
 
-async def rate_unavailable_handler(request: Request, exc: RateUnavailableError) -> JSONResponse:
-    return JSONResponse(status_code=503, content={"detail": exc.message})
+async def request_validation_errors_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=422,
+        content={
+            "code": "validation_error",
+            "message": "Invalid request",
+            "details": exc.errors(),
+        },
+    )
+
+
+async def starlette_http_errors_handler(request: Request, exc: HTTPException) -> JSONResponse:
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "code": "api_using_error",
+            "message": exc.detail,
+            "details": None,
+        },
+    )
+
+
+async def uncaught_exceptions_handler(request: Request, exc: Exception) -> JSONResponse:
+    return JSONResponse(
+        status_code=500,
+        content={
+            "code": "internal_error",
+            "message": "Server got uncaught exception. We are sorry!",
+            "details": None,
+        },
+    )
 
 
 def register_exception_handler(app: FastAPI) -> None:
-    app.add_exception_handler(
+    # app.add_exception_handler(
+    #     PackageNotFoundError,
+    #     package_not_found_handler,  # type: ignore[arg-type]
+    # )
+
+    # app.add_exception_handler(
+    #     RateUnavailableError,
+    #     rate_unavailable_handler,  # type: ignore[arg-type]
+    # )
+
+    # app.add_exception_handler(
+    #     PackageTypeNotFoundError,
+    #     package_type_not_found_handler, # type: ignore[arg-type]
+    # )
+
+    clients_exc_types = [
+        ExchangerServiceUnavailableError,
+        ExchangerServiceJSONKeyNotFoundError,
+        ExchangerServiceRateValueError,
+    ]
+
+    services_exc_types = [
         PackageNotFoundError,
-        package_not_found_handler,  # type: ignore[arg-type]
-    )
+        PackageTypeNotFoundError,
+    ]
+
+    domain_exc_types = clients_exc_types + services_exc_types
+
+    for exc_type in domain_exc_types:
+        app.add_exception_handler(
+            exc_type,
+            domain_errors_handler,  # type: ignore[arg-type]
+        )
 
     app.add_exception_handler(
-        RateUnavailableError,
-        rate_unavailable_handler,  # type: ignore[arg-type]
+        RequestValidationError,
+        register_exception_handler,  # type: ignore[arg-type]
+    )
+    app.add_exception_handler(
+        HTTPException,
+        starlette_http_errors_handler,  # type: ignore[arg-type]
     )

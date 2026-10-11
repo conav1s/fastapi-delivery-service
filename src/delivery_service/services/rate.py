@@ -5,6 +5,9 @@ from loguru import logger
 from redis.asyncio import Redis, RedisError
 
 from delivery_service.clients.cbr import CbrClient
+from delivery_service.clients.exceptions import ClientError
+
+from .exceptions import RateUnevaluateError
 
 
 class RateService:
@@ -24,12 +27,16 @@ class RateService:
         except RedisError as exc:
             logger.warning("Cache is unavailable: {}", exc)
 
-        usd_rate = await self._cbr.fetch_usd_rate()
-        logger.debug("Rate is received from CBR")
+        try:
+            usd_rate = await self._cbr.fetch_usd_rate()
+            logger.debug("Rate is received from CBR")
+        except ClientError:
+            logger.error("CBR exchanger service and redis cache is unavailable")
+            raise RateUnevaluateError() from None
 
         try:
-            await self._redis.setex(self._KEY, self._ttl, usd_rate)
+            await self._redis.setex(self._KEY, self._ttl, str(usd_rate))
         except RedisError as exc:
             logger.warning("Fail to update cache: {}", exc)
 
-        return Decimal(usd_rate)
+        return usd_rate

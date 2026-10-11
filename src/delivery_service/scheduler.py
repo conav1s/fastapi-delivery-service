@@ -4,15 +4,15 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from loguru import logger
 
-from delivery_service.clients.exceptions import RateUnavailableError
 from delivery_service.services.delivery_cost import DeliveryCostService
+from delivery_service.services.exceptions import RateUnevaluateError
 
 
 async def fill_missing_cost_job(service: DeliveryCostService) -> None:
     try:
         await service.fill_missing_costs()
-    except RateUnavailableError:
-        logger.warning("Delivery cost calculation skipped: USD rate unavailable")
+    except RateUnevaluateError:
+        logger.error("Delivery cost calculation skipped: USD rate service is helpless")
 
 
 def create_scheduler(service: DeliveryCostService, interval: timedelta) -> AsyncIOScheduler:

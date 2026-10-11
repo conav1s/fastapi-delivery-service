@@ -1,7 +1,13 @@
+from decimal import Decimal, InvalidOperation
+
 from httpx import AsyncClient, HTTPError
 from loguru import logger
 
-from .exceptions import RateUnavailableError
+from .exceptions import (
+    ExchangerServiceJSONKeyNotFoundError,
+    ExchangerServiceRateValueError,
+    ExchangerServiceUnavailableError,
+)
 
 
 class CbrClient:
@@ -9,15 +15,22 @@ class CbrClient:
         self._url = url
         self._client = http_client
 
-    async def fetch_usd_rate(self) -> str:
+    async def fetch_usd_rate(self) -> Decimal:
         try:
             response = await self._client.get(self._url)
             response.raise_for_status()
             data = response.json()
 
-            usd_rate = data["Valute"]["USD"]["Value"]
-        except (HTTPError, ValueError, KeyError) as err:
+            json_value = data["Valute"]["USD"]["Value"]
+            usd_rate = Decimal(json_value)
+        except HTTPError as err:
             logger.warning("Failed to fetch USD rate from {}: {!r}", self._url, err)
-            raise RateUnavailableError("Failed to obtain CBR rate") from err
+            raise ExchangerServiceUnavailableError(self._url) from err
+        except KeyError as err:
+            logger.warning("Failed to extract rate from JSON by key: {}", "USD")
+            raise ExchangerServiceJSONKeyNotFoundError("USD") from err
+        except InvalidOperation as err:
+            logger.warning("Rate value {} is not a number", json_value)
+            raise ExchangerServiceRateValueError(json_value) from err
 
-        return str(usd_rate)
+        return usd_rate
