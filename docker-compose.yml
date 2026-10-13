@@ -8,28 +8,24 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - pg_data:/var/lib/postgresql/
-    #ports:
-      #- 5433:5432
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 10s
-      retries: 3
       start_period: 3s
+      interval: 3s
+      retries: 3
+      timeout: 8s
 
   cache:
     image: redis:8.10.2-alpine3.23
     container_name: redis
-    # ports:
-    #   - 6379:6379
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 3
       start_period: 1s
+      interval: 3s
+      retries: 3
+      timeout: 3s
 
   migrations:
     build: .
@@ -42,7 +38,7 @@ services:
   app:
     build:
       context: .
-      target: dev
+      target: prod
     env_file: .env
     ports:
       - 8000:8000
@@ -52,7 +48,7 @@ services:
       migrations:
         condition: service_completed_successfully
       cache:
-        condition: service_started
+        condition: service_healthy
 
 volumes:
   pg_data:
