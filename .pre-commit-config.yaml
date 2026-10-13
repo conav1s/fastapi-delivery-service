@@ -16,28 +16,28 @@ repos:
   - repo: local
     hooks:
       - id: lint-fix
-        name: ruff check
+        name: ruff lint fixing
         entry: uv run poe lint-fix
         language: system
         types: [python]
         pass_filenames: false
 
       - id: format
-        name: ruff format
-        entry: uv run poe format
+        name: ruff format fixing
+        entry: uv run poe format-fix
         language: system
         types: [python]
         pass_filenames: false
 
       - id: typecheck
-        name: mypy
+        name: mypy typechecking
         entry: uv run poe typecheck
         language: system
         types: [python]
         pass_filenames: false
 
       - id: test
-        name: pytest
+        name: testing
         entry: uv run poe test
         language: system
         pass_filenames: false

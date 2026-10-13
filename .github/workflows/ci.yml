@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [ "dev" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Install uv"
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.13.0"
+          enable-cache: true
+
+      - name: "Set up Python"
+        run: uv python install
+
+      - name: "Install the project"
+        run: uv sync --locked
+
+      - name: "Lint Checking"
+        run: uv run poe lint-check
+
+      - name: "Format Checking"
+        run: uv run poe format-check
+
+      - name: "Type Checking"
+        run: uv run poe typecheck
+
+      - name: "Run tests"
+        run: uv run poe test

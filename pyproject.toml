@@ -37,13 +37,20 @@ dev = [
 entrypoint = "delivery_service.main:app"
 
 [tool.poe.tasks]
-format = "ruff format"
+lint-check = "ruff check"
+format-check = "ruff format --check"
+
 lint-fix = "ruff check --fix"
+format-fix = "ruff format"
+
 typecheck = "mypy src tests"
+
 test = "pytest -q"
-lint = ["lint-fix", "format", "typecheck"]
-check = ["lint", "test"]
+
 migrate = "alembic upgrade head"
+
+lint = ["lint-fix", "format-fix", "typecheck"]
+check = ["lint", "test"]
 
 [tool.ruff]
 line-length = 100
