@@ -18,9 +18,11 @@ jobs:
           POSTGRES_DB: delivery_test
         ports:
           - 55432:5432
-        options:
-          --health-cmd "ph-isready -U test -d delivery_test"
-          --health-interval 5s --health-timeout 5s --health-retries 5
+        options: >-
+          --health-cmd "pg-isready -U test -d delivery_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
 
@@ -46,7 +48,7 @@ jobs:
         run: uv run poe typecheck
 
       - name: "Run tests"
-        run: uv run poe test-unit
+        run: uv run poe test
 
   docker-build:
     runs-on: ubuntu-24.04
