@@ -20,7 +20,7 @@ jobs:
           - 55432:5432
         options:
           --health-cmd "ph-isready -U test -d delivery_test"
-          --health-interval 5s -- health-timeout 5s --helath-retries 5
+          --health-interval 5s --health-timeout 5s --helath-retries 5
     steps:
       - uses: actions/checkout@v4
 
