@@ -47,8 +47,11 @@ jobs:
       - name: "Type Checking"
         run: uv run poe typecheck
 
-      - name: "Run tests"
-        run: uv run poe test
+      - name: "Run Unit Tests"
+        run: uv run poe test-unit
+
+      - name: "Run API Tests"
+        run: uv run poe test-api
 
   docker-build:
     runs-on: ubuntu-24.04
