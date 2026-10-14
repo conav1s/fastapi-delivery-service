@@ -19,7 +19,7 @@ jobs:
         ports:
           - 55432:5432
         options: >-
-          --health-cmd "pg-isready -U test -d delivery_test"
+          --health-cmd "pg_isready -U test -d delivery_test"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 5
@@ -54,5 +54,5 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: "Build imgage"
+      - name: "Build image"
         run: docker build --target prod .
