@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from loguru import logger
@@ -37,7 +38,7 @@ async def request_validation_errors_handler(
         content={
             "code": "validation_error",
             "message": "Invalid request",
-            "details": exc.errors(),
+            "details": jsonable_encoder(exc.errors()),
         },
     )
 

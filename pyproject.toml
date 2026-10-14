@@ -45,12 +45,14 @@ format-fix = "ruff format"
 
 typecheck = "mypy src tests"
 
-test = "pytest -q"
+test-unit = "pytest -q tests/unit"
+test-api = "pytest -q tests/api"
+test-all = "pytest -q"
 
 migrate = "alembic upgrade head"
 
 lint = ["lint-fix", "format-fix", "typecheck"]
-check = ["lint", "test"]
+check = ["lint", "test-unit", "test-api"]
 
 [tool.ruff]
 line-length = 100
