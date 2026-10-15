@@ -24,3 +24,10 @@ class ExchangeRateUnavailableError(DomainError):
 
     def __init__(self) -> None:
         super().__init__("Cannot obtain exchange rate: cache and CBR are both unavailable")
+
+
+class PackageAlreadyAssignedError(DomainError):
+    code = "already_assigned"
+
+    def __init__(self, package_id: int) -> None:
+        super().__init__(f"Package with id = {package_id} is already assigned")

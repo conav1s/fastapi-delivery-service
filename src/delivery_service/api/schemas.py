@@ -61,3 +61,7 @@ class PackageListResponse(BaseModel):
 
 class FillCostsResponse(BaseModel):
     updated: int
+
+
+class PackageAssign(BaseModel):
+    company_id: PositiveInt
