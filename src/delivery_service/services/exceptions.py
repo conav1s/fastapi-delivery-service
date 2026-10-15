@@ -27,7 +27,7 @@ class ExchangeRateUnavailableError(DomainError):
 
 
 class PackageAlreadyAssignedError(DomainError):
-    code = "already_assigned"
+    code = "package_already_assigned"
 
     def __init__(self, package_id: int) -> None:
         super().__init__(f"Package with id = {package_id} is already assigned")

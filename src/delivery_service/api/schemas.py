@@ -46,6 +46,7 @@ class PackageRead(ReadBase):
     weight: PackageWeightType
     content_cost_usd: MoneyType
     delivery_cost_rub: MoneyType | None
+    company_id: int | None
 
     @field_serializer("delivery_cost_rub")
     def serialize_delivery_cost_rub(self, delivery_cost_rub: MoneyType | None) -> MoneyType | str:
