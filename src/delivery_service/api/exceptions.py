@@ -8,6 +8,7 @@ from starlette.exceptions import HTTPException
 from delivery_service.exceptions import DomainError
 from delivery_service.services.exceptions import (
     ExchangeRateUnavailableError,
+    PackageAlreadyAssignedError,
     PackageNotFoundError,
     PackageTypeNotFoundError,
 )
@@ -16,6 +17,7 @@ STATUS_BY_ERROR: dict[type[DomainError], int] = {
     PackageNotFoundError: 404,
     PackageTypeNotFoundError: 422,
     ExchangeRateUnavailableError: 503,
+    PackageAlreadyAssignedError: 409,
 }
 
 

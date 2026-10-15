@@ -43,7 +43,7 @@ class Package(Base):
     content_cost_usd: Mapped[Money]
     exchange_rate: Mapped[Decimal | None] = mapped_column(Numeric(10, 4))
     delivery_cost_rub: Mapped[Money | None]
-
+    company_id: Mapped[int | None]
     session_id: Mapped[uuid.UUID] = mapped_column(index=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
@@ -59,4 +59,5 @@ class Package(Base):
             "(exchange_rate IS NULL) = (delivery_cost_rub IS NULL)",
             name="cost_and_rate_defining_together",
         ),
+        CheckConstraint("company_id > 0", name="company_id_positive"),
     )

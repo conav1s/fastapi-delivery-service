@@ -2,13 +2,13 @@ from dataclasses import dataclass
 from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from delivery_service.db.models import Package, PackageType
 
-from .exceptions import PackageNotFoundError, PackageTypeNotFoundError
+from .exceptions import PackageAlreadyAssignedError, PackageNotFoundError, PackageTypeNotFoundError
 
 
 @dataclass(frozen=True)
@@ -100,3 +100,21 @@ class PackageService:
         res = await self._db.scalars(stmt)
 
         return list(res.all())
+
+    async def assign_package(self, company_id: int, package_id: int) -> None:
+
+        async with self._db.begin():
+            stmt = (
+                update(Package)
+                .where(Package.company_id.is_(None), Package.id == package_id)
+                .values(company_id=company_id)
+                .returning(Package.id)
+            )
+            assigned_id = (await self._db.execute(stmt)).scalar_one_or_none()
+
+            if assigned_id is None:
+                package = await self._db.get(Package, package_id)
+                if package is None:
+                    raise PackageNotFoundError(package_id)
+                if package.company_id != company_id:
+                    raise PackageAlreadyAssignedError(package_id)

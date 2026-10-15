@@ -10,6 +10,7 @@ from delivery_service.services.packages import PackageData, PackageQuery, Packag
 from .dependencies import get_package_service, get_user_session_id
 from .schemas import (
     FillCostsResponse,
+    PackageAssign,
     PackageCreate,
     PackageCreateResponse,
     PackageFilters,
@@ -88,6 +89,16 @@ async def list_packages(
         offset=pagination.offset,
         limit=pagination.limit,
     )
+
+
+@router.put("/packages/{package_id}/company", status_code=204)
+async def assign_package_to_company(
+    package_id: int,
+    assignment_data: PackageAssign,
+    service: Annotated[PackageService, Depends(get_package_service)],
+) -> None:
+
+    await service.assign_package(company_id=assignment_data.company_id, package_id=package_id)
 
 
 router_debug = APIRouter(tags=["debug"])
