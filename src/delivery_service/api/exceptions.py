@@ -1,0 +1,88 @@
+from fastapi import FastAPI, Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from loguru import logger
+from starlette.exceptions import HTTPException
+
+from delivery_service.exceptions import DomainError
+from delivery_service.services.exceptions import (
+    ExchangeRateUnavailableError,
+    PackageAlreadyAssignedError,
+    PackageNotFoundError,
+    PackageTypeNotFoundError,
+)
+
+STATUS_BY_ERROR: dict[type[DomainError], int] = {
+    PackageNotFoundError: 404,
+    PackageTypeNotFoundError: 422,
+    ExchangeRateUnavailableError: 503,
+    PackageAlreadyAssignedError: 409,
+}
+
+
+async def domain_errors_handler(request: Request, exc: DomainError) -> JSONResponse:
+    return JSONResponse(
+        status_code=STATUS_BY_ERROR.get(type(exc), 500),
+        content={
+            "code": exc.code,
+            "message": exc.message,
+            "details": None,
+        },
+    )
+
+
+async def request_validation_errors_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=422,
+        content={
+            "code": "validation_error",
+            "message": "Invalid request",
+            "details": jsonable_encoder(exc.errors()),
+        },
+    )
+
+
+async def starlette_http_errors_handler(request: Request, exc: HTTPException) -> JSONResponse:
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "code": "api_using_error",
+            "message": exc.detail,
+            "details": None,
+        },
+    )
+
+
+async def uncaught_exceptions_handler(request: Request, exc: Exception) -> JSONResponse:
+    logger.exception("Unhandled error on {} {}", request.method, request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "code": "internal_error",
+            "message": "Server got uncaught exception. We are sorry!",
+            "details": None,
+        },
+    )
+
+
+def register_exception_handler(app: FastAPI) -> None:
+    app.add_exception_handler(
+        DomainError,
+        domain_errors_handler,  # type: ignore[arg-type]
+    )
+
+    app.add_exception_handler(
+        RequestValidationError,
+        request_validation_errors_handler,  # type: ignore[arg-type]
+    )
+    app.add_exception_handler(
+        HTTPException,
+        starlette_http_errors_handler,  # type: ignore[arg-type]
+    )
+    app.add_exception_handler(
+        Exception,
+        uncaught_exceptions_handler,
+    )

@@ -1,0 +1,96 @@
+[project]
+name = "delivery-service"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "conavis", email = "nivan.kairo@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "alembic>=1.20.0",
+    "apscheduler>=3.11.3",
+    "fastapi[all]>=0.142.2",
+    "httpx>=0.28.1",
+    "loguru>=0.7.3",
+    "psycopg[binary]>=3.3.6",
+    "pydantic>=2.13.5",
+    "redis>=8.1.0",
+    "sqlalchemy[asyncio]>=2.1.3",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "mypy>=2.4.0",
+    "poethepoet>=0.48.0",
+    "pre-commit>=4.6.2",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.16.10",
+]
+
+[tool.fastapi]
+entrypoint = "delivery_service.main:app"
+
+[tool.poe.tasks]
+lint-check = "ruff check"
+format-check = "ruff format --check"
+
+lint-fix = "ruff check --fix"
+format-fix = "ruff format"
+
+typecheck = "mypy src tests"
+
+test-unit = "pytest -q tests/unit"
+test-api = "pytest -q tests/api"
+test-all = "pytest -q"
+
+migrate = "alembic upgrade head"
+
+lint = ["lint-fix", "format-fix", "typecheck"]
+check = ["lint", "test-unit", "test-api"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+src = ["src"]
+extend-exclude = ["alembic"]
+force-exclude = true
+
+[tool.ruff.lint]
+select = ["ASYNC", "B", "C4", "DTZ", "E4", "E7", "E9", "F", "FAST", "G", "I", "LOG", "N", "PT", "RUF", "SIM", "T20", "UP", "W"]
+ignore = ["RUF001"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+combine-as-imports = true
+force-sort-within-sections = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+docstring-code-format = true
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+plugins = ["pydantic.mypy"]
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = ["alembic.*", "apscheduler.*"]
+ignore_errors = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disable_error_code = ["arg-type"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

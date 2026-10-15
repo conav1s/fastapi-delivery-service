@@ -1,0 +1,54 @@
+services:
+  database:
+    image: postgres:18.6-alpine3.23
+    container_name: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pg_data:/var/lib/postgresql/
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      start_period: 3s
+      interval: 3s
+      retries: 3
+      timeout: 8s
+
+  cache:
+    image: redis:8.10.2-alpine3.23
+    container_name: redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      start_period: 1s
+      interval: 3s
+      retries: 3
+      timeout: 3s
+
+  migrations:
+    build: .
+    env_file: .env
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      database:
+        condition: service_healthy
+
+  app:
+    build:
+      context: .
+      target: prod
+    env_file: .env
+    ports:
+      - 8000:8000
+    depends_on:
+      database:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
+      cache:
+        condition: service_healthy
+
+volumes:
+  pg_data:
