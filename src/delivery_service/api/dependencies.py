@@ -2,12 +2,13 @@ from collections.abc import AsyncGenerator
 from typing import Annotated
 import uuid
 
-from fastapi import Cookie, Depends, Response
+from fastapi import Cookie, Depends, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from delivery_service.config import settings
 from delivery_service.db.session import session_factory
 from delivery_service.services.packages import PackageService
+from delivery_service.services.support import SupportService
 
 
 async def get_db_session() -> AsyncGenerator[AsyncSession]:
@@ -19,6 +20,11 @@ async def get_package_service(
     db: Annotated[AsyncSession, Depends(get_db_session)],
 ) -> PackageService:
     return PackageService(db)
+
+
+def get_support_service(request: Request) -> SupportService:
+    service: SupportService = request.app.state.support_service
+    return service
 
 
 async def get_user_session_id(

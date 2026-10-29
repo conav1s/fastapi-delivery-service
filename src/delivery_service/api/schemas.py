@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, PositiveInt, field_serializer
+from pydantic import BaseModel, ConfigDict, Field, PositiveInt, StringConstraints, field_serializer
 
 PackageNameType = Annotated[str, Field(max_length=80)]
 PackageTypeNameType = Annotated[str, Field(max_length=50)]
@@ -66,3 +66,12 @@ class FillCostsResponse(BaseModel):
 
 class PackageAssign(BaseModel):
     company_id: PositiveInt
+
+
+class SupportQuestion(BaseModel):
+    question: Annotated[str, StringConstraints(strip_whitespace=True, min_length=3, max_length=500)]
+
+
+class SupportAnswerResponse(BaseModel):
+    answer: str
+    sources: list[str] = Field(description="Sections of the rules the answer is based on")

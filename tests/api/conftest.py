@@ -13,9 +13,11 @@ from delivery_service.db.session import engine, session_factory
 from delivery_service.main import app
 from delivery_service.services.delivery_cost import DeliveryCostService
 from delivery_service.services.exceptions import ExchangeRateUnavailableError
+from delivery_service.services.support import SupportAnswer, SupportService
 
 type ClientFactory = Callable[[], httpx.AsyncClient]
 type CostServiceInstaller = Callable[[Decimal | None], None]
+type SupportServiceInstaller = Callable[[SupportAnswer | Exception], None]
 
 ALEMBIC_INI = Path(__file__).resolve().parents[2] / "alembic.ini"
 
@@ -76,3 +78,29 @@ def install_cost_service() -> Generator[CostServiceInstaller]:
 
     if hasattr(app.state, "delivery_cost_service"):
         del app.state.delivery_cost_service
+
+
+class FakeSupportService:
+    """Stands in for SupportService: RAG itself is covered by unit tests."""
+
+    def __init__(self, outcome: SupportAnswer | Exception) -> None:
+        self._outcome = outcome
+        self.questions: list[str] = []
+
+    async def answer(self, question: str) -> SupportAnswer:
+        self.questions.append(question)
+        if isinstance(self._outcome, Exception):
+            raise self._outcome
+        return self._outcome
+
+
+@pytest.fixture
+def install_support_service() -> Generator[SupportServiceInstaller]:
+    def install(outcome: SupportAnswer | Exception) -> None:
+        service: SupportService = FakeSupportService(outcome)  # type: ignore[assignment]
+        app.state.support_service = service
+
+    yield install
+
+    if hasattr(app.state, "support_service"):
+        del app.state.support_service

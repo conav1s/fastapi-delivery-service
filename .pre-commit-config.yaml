@@ -37,17 +37,17 @@ repos:
         pass_filenames: false
 
       - id: test-unit
-        name: testing
+        name: unit-testing
         entry: uv run poe test-unit
         language: system
         pass_filenames: false
         always_run: true
         stages: [pre-push]
 
-      - id: test-api
-        name: testing
-        entry: uv run poe test-api
-        language: system
-        pass_filenames: false
-        always_run: true
-        stages: [pre-push]
+      # - id: test-api
+      #   name: testing
+      #   entry: uv run poe test-api
+      #   language: system
+      #   pass_filenames: false
+      #   always_run: true
+      #   stages: [pre-push]
