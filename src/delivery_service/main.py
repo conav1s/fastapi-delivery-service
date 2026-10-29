@@ -53,9 +53,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
 
     scheduler.start()
 
-    # Support assistant (RAG). Qdrant is always local, so it never goes through a proxy.
     qdrant = QdrantClient(url=settings.qdrant.url, trust_env=False)
-    # Groq gets its own HTTP client: it may need a proxy that other traffic must not use.
     groq_http = AsyncClient(proxy=settings.groq.proxy_url, timeout=settings.groq.timeout_s)
 
     app.state.support_service = SupportService(
@@ -66,8 +64,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
                 settings.knowledge_base.embedding_model,
                 cache_dir=settings.knowledge_base.embedding_cache_dir,
             ),
-            # Do not query Qdrant at startup: if it is down, only support answers
-            # fail (503), the rest of the service keeps working.
             validate_collection_config=False,
         ),
         llm=_create_llm(groq_http),
@@ -93,7 +89,7 @@ def _create_llm(http_client: AsyncClient) -> ChatGroq | None:
     return ChatGroq(
         model_name=settings.groq.model,
         api_key=settings.groq.api_key,
-        temperature=0,  # support answers should be stable, not creative
+        temperature=0,
         reasoning_format=(
             None if settings.groq.reasoning_format == "none" else settings.groq.reasoning_format
         ),

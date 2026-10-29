@@ -48,5 +48,4 @@ def setup_logging() -> None:
         lg.propagate = True
 
     logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
-    # Every Qdrant and Groq call is an httpx request; INFO would log each of them.
     logging.getLogger("httpx").setLevel(logging.WARNING)

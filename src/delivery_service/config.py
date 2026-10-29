@@ -95,14 +95,11 @@ class KnowledgeBaseSettings(BaseSettings):
     )
 
     path: Path = Path("knowledge_base/rules.md")
-    # Multilingual: the rules and the questions are in Russian.
     embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-    # None = fastembed's default (a folder in the system temp directory).
     embedding_cache_dir: str | None = None
     chunk_size: PositiveInt = 500
     chunk_overlap: int = 50
     top_k: PositiveInt = 3
-    # Cosine similarity below which a chunk is considered unrelated to the question.
     min_score: float = 0.2
 
 
@@ -111,13 +108,9 @@ class GroqSettings(BaseSettings):
         env_file=".env", env_prefix="GROQ_", extra="ignore", env_ignore_empty=True
     )
 
-    # Without a key the service starts, but the support endpoint answers 503.
     api_key: SecretStr | None = None
     model: str = "qwen/qwen3.8-27b"
-    # Reasoning models (Qwen3) print their thinking; "hidden" keeps only the answer.
-    # "none" for models that do not support the parameter.
     reasoning_format: Literal["parsed", "raw", "hidden", "none"] = "hidden"
-    # Groq blocks some regions; e.g. http://host.docker.internal:10809 for a VPN on the host.
     proxy_url: str | None = None
     timeout_s: float = 30
 

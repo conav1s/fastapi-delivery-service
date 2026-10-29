@@ -61,7 +61,6 @@ class SupportService:
         self._knowledge_base = knowledge_base
         self._top_k = top_k
         self._min_score = min_score
-        # The generation half as a LangChain chain: variables -> messages -> model -> text.
         self._chain = (PROMPT | llm | StrOutputParser()) if llm is not None else None
 
     async def answer(self, question: str) -> SupportAnswer:
@@ -70,7 +69,6 @@ class SupportService:
 
         chunks = await self._retrieve(question)
         if not chunks:
-            # Nothing related in the rules: answer without spending an LLM request.
             logger.info("No relevant rules for support question, answered without LLM")
             return SupportAnswer(answer=NO_ANSWER, sources=[])
 
