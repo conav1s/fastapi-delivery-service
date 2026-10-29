@@ -48,3 +48,4 @@ def setup_logging() -> None:
         lg.propagate = True
 
     logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
+    logging.getLogger("httpx").setLevel(logging.WARNING)

@@ -6,8 +6,9 @@ from fastapi.routing import APIRouter
 
 from delivery_service.services.delivery_cost import DeliveryCostService
 from delivery_service.services.packages import PackageData, PackageQuery, PackageService
+from delivery_service.services.support import SupportService
 
-from .dependencies import get_package_service, get_user_session_id
+from .dependencies import get_package_service, get_support_service, get_user_session_id
 from .schemas import (
     FillCostsResponse,
     PackageAssign,
@@ -18,6 +19,8 @@ from .schemas import (
     PackageRead,
     PackageTypeRead,
     Pagination,
+    SupportAnswerResponse,
+    SupportQuestion,
 )
 
 router = APIRouter(tags=["packages"])
@@ -99,6 +102,19 @@ async def assign_package_to_company(
 ) -> None:
 
     await service.assign_package(company_id=assignment_data.company_id, package_id=package_id)
+
+
+router_support = APIRouter(tags=["support"])
+
+
+@router_support.post("/support/questions")
+async def ask_support(
+    body: SupportQuestion,
+    service: Annotated[SupportService, Depends(get_support_service)],
+) -> SupportAnswerResponse:
+    result = await service.answer(body.question)
+
+    return SupportAnswerResponse(answer=result.answer, sources=result.sources)
 
 
 router_debug = APIRouter(tags=["debug"])

@@ -1,4 +1,5 @@
 from datetime import timedelta
+from pathlib import Path
 from typing import Literal
 
 from pydantic import HttpUrl, PositiveInt, SecretStr, field_validator
@@ -76,12 +77,53 @@ class CurrencyExchangerSettings(BaseSettings):
     refresh_hours: int = 1
 
 
+class QdrantSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", env_prefix="QDRANT_", extra="ignore")
+
+    host: str = "localhost"
+    port: int = 6333
+    collection: str = "knowledge_base"
+
+    @property
+    def url(self) -> str:
+        return f"http://{self.host}:{self.port}"
+
+
+class KnowledgeBaseSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env", env_prefix="KNOWLEDGE_BASE_", extra="ignore", env_ignore_empty=True
+    )
+
+    path: Path = Path("knowledge_base/rules.md")
+    embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    embedding_cache_dir: str | None = None
+    chunk_size: PositiveInt = 500
+    chunk_overlap: int = 50
+    top_k: PositiveInt = 3
+    min_score: float = 0.2
+
+
+class GroqSettings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env", env_prefix="GROQ_", extra="ignore", env_ignore_empty=True
+    )
+
+    api_key: SecretStr | None = None
+    model: str = "qwen/qwen3.8-27b"
+    reasoning_format: Literal["parsed", "raw", "hidden", "none"] = "hidden"
+    proxy_url: str | None = None
+    timeout_s: float = 30
+
+
 class Settings(BaseSettings):
     app: AppSettings = AppSettings()
     postgres: PostgresSettings = PostgresSettings()
     session: SessionSettings = SessionSettings()
     redis: RedisSettings = RedisSettings()
     exchanger: CurrencyExchangerSettings = CurrencyExchangerSettings()
+    qdrant: QdrantSettings = QdrantSettings()
+    knowledge_base: KnowledgeBaseSettings = KnowledgeBaseSettings()
+    groq: GroqSettings = GroqSettings()
 
 
 settings = Settings()

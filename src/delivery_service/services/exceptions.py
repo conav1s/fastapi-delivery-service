@@ -26,6 +26,27 @@ class ExchangeRateUnavailableError(DomainError):
         super().__init__("Cannot obtain exchange rate: cache and CBR are both unavailable")
 
 
+class SupportNotConfiguredError(DomainError):
+    code = "support_not_configured"
+
+    def __init__(self) -> None:
+        super().__init__("Support assistant is not configured: GROQ_API_KEY is not set")
+
+
+class KnowledgeBaseUnavailableError(DomainError):
+    code = "knowledge_base_unavailable"
+
+    def __init__(self) -> None:
+        super().__init__("Knowledge base search is unavailable")
+
+
+class LlmUnavailableError(DomainError):
+    code = "llm_unavailable"
+
+    def __init__(self) -> None:
+        super().__init__("Language model is unavailable or its rate limit is exhausted")
+
+
 class PackageAlreadyAssignedError(DomainError):
     code = "package_already_assigned"
 
