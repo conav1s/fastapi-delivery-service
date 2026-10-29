@@ -7,6 +7,7 @@ PackageNameType = Annotated[str, Field(max_length=80)]
 PackageTypeNameType = Annotated[str, Field(max_length=50)]
 PackageWeightType = Annotated[Decimal, Field(gt=0, max_digits=8, decimal_places=3)]
 MoneyType = Annotated[Decimal, Field(ge=0, max_digits=10, decimal_places=2)]
+RubMoneyType = Annotated[Decimal, Field(ge=0, max_digits=14, decimal_places=2)]
 
 
 class ReadBase(BaseModel):
@@ -45,11 +46,13 @@ class PackageRead(ReadBase):
     type: PackageTypeRead
     weight: PackageWeightType
     content_cost_usd: MoneyType
-    delivery_cost_rub: MoneyType | None
+    delivery_cost_rub: RubMoneyType | None
     company_id: int | None
 
     @field_serializer("delivery_cost_rub")
-    def serialize_delivery_cost_rub(self, delivery_cost_rub: MoneyType | None) -> MoneyType | str:
+    def serialize_delivery_cost_rub(
+        self, delivery_cost_rub: RubMoneyType | None
+    ) -> RubMoneyType | str:
         return delivery_cost_rub if delivery_cost_rub is not None else "Не рассчитано"
 
 
@@ -66,6 +69,10 @@ class FillCostsResponse(BaseModel):
 
 class PackageAssign(BaseModel):
     company_id: PositiveInt
+
+
+class HealthResponse(BaseModel):
+    status: str = "ok"
 
 
 class SupportQuestion(BaseModel):

@@ -11,6 +11,7 @@ from delivery_service.services.support import SupportService
 from .dependencies import get_package_service, get_support_service, get_user_session_id
 from .schemas import (
     FillCostsResponse,
+    HealthResponse,
     PackageAssign,
     PackageCreate,
     PackageCreateResponse,
@@ -102,6 +103,20 @@ async def assign_package_to_company(
 ) -> None:
 
     await service.assign_package(company_id=assignment_data.company_id, package_id=package_id)
+
+
+router_health = APIRouter(tags=["health"])
+
+
+@router_health.get("/health")
+async def health() -> HealthResponse:
+    """Liveness: the process is up and serving requests.
+
+    Deliberately does not check Postgres, Redis or Qdrant: if one of them is down,
+    restarting the app would not help, and the routes that need them already
+    answer with their own errors.
+    """
+    return HealthResponse()
 
 
 router_support = APIRouter(tags=["support"])

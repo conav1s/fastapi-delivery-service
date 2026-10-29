@@ -11,7 +11,7 @@ from qdrant_client import QdrantClient
 from redis.asyncio import Redis
 
 from delivery_service.api.exceptions import register_exception_handler
-from delivery_service.api.router import router, router_debug, router_support
+from delivery_service.api.router import router, router_debug, router_health, router_support
 from delivery_service.clients.cbr import CbrClient
 from delivery_service.clients.embeddings import FastEmbedEmbeddings
 from delivery_service.services.delivery_cost import DeliveryCostService
@@ -19,7 +19,7 @@ from delivery_service.services.rate import RateService
 from delivery_service.services.support import SupportService
 
 from .config import settings
-from .db.session import session_factory
+from .db.session import engine, session_factory
 from .logging_setup import setup_logging
 from .scheduler import create_scheduler
 
@@ -74,6 +74,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     yield
 
     scheduler.shutdown()
+    # After the scheduler: its job may still be using a connection.
+    await engine.dispose()
     qdrant.close()
     await groq_http.aclose()
     await app.state.redis.aclose()
@@ -102,6 +104,7 @@ app = FastAPI(lifespan=lifespan)
 
 
 register_exception_handler(app)
+app.include_router(router_health)
 app.include_router(router)
 app.include_router(router_support)
 

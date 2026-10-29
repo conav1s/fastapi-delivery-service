@@ -184,3 +184,32 @@ async def test_list_rejects_limit_above_maximum(client: httpx.AsyncClient) -> No
     assert response.status_code == 422
     assert response.json()["code"] == "validation_error"
     assert response.json()["details"][0]["loc"] == ["query", "limit"]
+
+
+async def test_biggest_package_does_not_block_cost_calculation(
+    client: httpx.AsyncClient, install_cost_service: CostServiceInstaller
+) -> None:
+    install_cost_service(Decimal("120"))
+    normal_id = await create_package(client)
+    biggest_id = await create_package(client, weight="99999.999", content_cost_usd="99999999.99")
+
+    response = await client.post("/packages/fill-missing-costs")
+
+    assert response.json() == {"updated": 2}
+    normal = (await client.get(f"/packages/{normal_id}")).json()
+    biggest = (await client.get(f"/packages/{biggest_id}")).json()
+    # (42 * 0.5 + 4242 * 0.01) * 120
+    assert normal["delivery_cost_rub"] == "7610.40"
+    # (99999.999 * 0.5 + 99999999.99 * 0.01) * 120: did not fit into Numeric(10, 2)
+    assert biggest["delivery_cost_rub"] == "125999999.93"
+
+
+async def test_invalid_session_cookie_starts_new_session(client: httpx.AsyncClient) -> None:
+    client.cookies.set(settings.session.name, "not-a-uuid")
+
+    response = await client.post("/packages", json=TEST_PACKAGE)
+
+    assert response.status_code == 201
+    new_session = response.cookies.get(settings.session.name)
+    assert new_session is not None
+    assert new_session != "not-a-uuid"
